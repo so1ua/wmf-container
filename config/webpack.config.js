@@ -760,7 +760,6 @@ module.exports = function (webpackEnv) {
             counter: "counter@http://localhost:3001/remoteEntry.js",
           },
           shared: { react: { singleton: true }, 'react-dom': { singleton: true } },
-
         })
     ].filter(Boolean),
     // Turn off performance processing because we utilize
