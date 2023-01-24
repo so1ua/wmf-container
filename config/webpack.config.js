@@ -1,4 +1,3 @@
-'use strict';
 
 const fs = require('fs');
 const path = require('path');
@@ -25,6 +24,8 @@ const ForkTsCheckerWebpackPlugin =
     ? require('react-dev-utils/ForkTsCheckerWarningWebpackPlugin')
     : require('react-dev-utils/ForkTsCheckerWebpackPlugin');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const { ModuleFederationPlugin } = require('webpack').container;
+
 
 const createEnvironmentHash = require('./webpack/persistentCache/createEnvironmentHash');
 
@@ -219,7 +220,7 @@ module.exports = function (webpackEnv) {
       // webpack uses `publicPath` to determine where the app is being served from.
       // It requires a trailing slash, or the file assets will get an incorrect path.
       // We inferred the "public path" (such as / or /my-project) from homepage.
-      publicPath: paths.publicUrlOrPath,
+      publicPath: 'auto',
       // Point sourcemap entries to original disk location (format as URL on Windows)
       devtoolModuleFilenameTemplate: isEnvProduction
         ? info =>
@@ -747,6 +748,20 @@ module.exports = function (webpackEnv) {
             },
           },
         }),
+        new ModuleFederationPlugin({
+          name: 'container',
+          filename: 'remoteEntry.js',
+
+          exposes: {
+            './Store': './src/store.js'
+          },
+          remotes: {
+            container: "container@http://localhost:3000/remoteEntry.js",
+            counter: "counter@http://localhost:3001/remoteEntry.js",
+          },
+          shared: { react: { singleton: true }, 'react-dom': { singleton: true } },
+
+        })
     ].filter(Boolean),
     // Turn off performance processing because we utilize
     // our own hints via the FileSizeReporter
